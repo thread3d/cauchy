@@ -202,7 +202,7 @@ def target_settings(cid, name):
     emit('\t\t\tINFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";')
     emit('\t\t\tLD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/../Frameworks");')
     emit('\t\t\tMACOSX_DEPLOYMENT_TARGET = 26.0;')
-    emit('\t\t\tMARKETING_VERSION = 1.0;')
+    emit('\t\t\tMARKETING_VERSION = 1.2.0;')
     emit('\t\t\tPRODUCT_BUNDLE_IDENTIFIER = com.cauchy.app;')
     emit('\t\t\tPRODUCT_NAME = "$(TARGET_NAME)";')
     emit('\t\t\tSWIFT_EMIT_LOC_STRINGS = YES;')

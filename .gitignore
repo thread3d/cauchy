@@ -1,13 +1,19 @@
 .DS_Store
+._*
 build/
 DerivedData/
+# Debug symbols copied out of an archive or a Release build
+*.dSYM/
 # Cloned by scripts/run.sh and by CI, not vendored. It used to be recorded as a
 # gitlink with no .gitmodules entry, which made every checkout end with
 # "No url found for submodule path 'Packages/SwiftMath'".
 /Packages/SwiftMath/
 *.xcuserstate
 xcuserdata/
+# Test report bundles exported from Xcode or -resultBundlePath
+*.xcresult
 .build/
+.swiftpm/
 *.dmg
 /dmg_source/
 /dump*
@@ -18,12 +24,17 @@ xcuserdata/
 # Local benchmark reports and rendered inspection pages
 /tmp/
 
+# Icon design exploration: candidate renders and the renderer that produced
+# them. The shipping icon itself is the tracked asset catalog below.
+/IconConcepts/
+
 # Claude Code local state
 .claude/worktrees/
 .claude/settings.local.json
 
 # LLVM coverage artifacts
 *.profraw
+*.profdata
 
 # Python benchmark caches
 __pycache__/

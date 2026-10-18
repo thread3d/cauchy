@@ -6,12 +6,6 @@ Native macOS PDF reader for dense technical textbooks, mathematics papers, and a
 
 Needs macOS 26.0 or later. The first time you open it, go to System Settings, then Privacy & Security, and click Open Anyway.
 
-<!-- TODO: screenshot of System Settings > Privacy & Security showing the Open Anyway button for Cauchy.
-     Save it as docs/images/open-anyway.png and uncomment the next line.
-![System Settings > Privacy & Security showing Open Anyway](docs/images/open-anyway.png)
--->
-TODO: screenshot of System Settings > Privacy & Security showing the Open Anyway button (`docs/images/open-anyway.png`).
-
 MIT licensed — see [LICENSE](LICENSE).
 
 ## Requirements

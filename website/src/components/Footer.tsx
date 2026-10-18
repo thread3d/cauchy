@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { assistants } from "@/lib/assistants";
 
-const REPO_URL = "https://github.com/jerrydjin/cauchy";
+const REPO_URL = "https://github.com/thread3d/cauchy";
 
 const linkClass = "text-[13px] text-[#A8A29E] hover:text-white";
 
@@ -65,7 +65,7 @@ export default function Footer() {
           <div className="text-[12px] text-[#A8A29E]">
             A native macOS reader for mathematics. MIT licensed, source at{" "}
             <a href={REPO_URL} target="_blank" rel="noopener noreferrer" className="hover:text-white underline underline-offset-4">
-              jerrydjin/cauchy
+              thread3d/cauchy
             </a>
             .
           </div>

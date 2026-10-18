@@ -5,8 +5,8 @@ import MathBackground from "@/components/MathBackground";
 import { assistants } from "@/lib/assistants";
 
 const DOWNLOAD_URL =
-  "https://github.com/jerrydjin/cauchy/releases/latest/download/Cauchy.dmg";
-const REPO_URL = "https://github.com/jerrydjin/cauchy";
+  "https://github.com/thread3d/cauchy/releases/latest/download/Cauchy.dmg";
+const REPO_URL = "https://github.com/thread3d/cauchy";
 
 const inline =
   "text-primary underline underline-offset-4 decoration-secondary/40 hover:decoration-primary transition-colors";
@@ -56,7 +56,7 @@ export default function Home() {
             </Link>{" "}
             ·{" "}
             <a
-              href="https://github.com/jerrydjin/cauchy/releases"
+              href="https://github.com/thread3d/cauchy/releases"
               target="_blank"
               rel="noopener noreferrer"
               className={inline}

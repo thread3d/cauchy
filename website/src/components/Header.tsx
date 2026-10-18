@@ -17,7 +17,7 @@ export default function Header() {
               FAQ
             </Link>
             <a
-              href="https://github.com/jerrydjin/cauchy/releases"
+              href="https://github.com/thread3d/cauchy/releases"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:opacity-60 transition-opacity"
@@ -25,7 +25,7 @@ export default function Header() {
               Releases
             </a>
             <a
-              href="https://github.com/jerrydjin/cauchy"
+              href="https://github.com/thread3d/cauchy"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:opacity-60 transition-opacity"
@@ -37,7 +37,7 @@ export default function Header() {
 
         <div className="flex items-center gap-6">
           <Link
-            href="https://github.com/jerrydjin/cauchy/releases/latest/download/Cauchy.dmg"
+            href="https://github.com/thread3d/cauchy/releases/latest/download/Cauchy.dmg"
             className="bg-accent text-accent-text px-5 py-2.5 rounded-md text-[15px] font-medium hover:bg-accent-hover transition-colors"
           >
             Get Cauchy

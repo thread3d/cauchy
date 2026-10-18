@@ -6,7 +6,7 @@ export const metadata = {
     "Cauchy collects no telemetry. What stays on your Mac, and what a cloud connector sends when you ask a question.",
 };
 
-const REPO_URL = "https://github.com/jerrydjin/cauchy";
+const REPO_URL = "https://github.com/thread3d/cauchy";
 
 const inline =
   "text-primary underline underline-offset-4 decoration-secondary/40 hover:decoration-primary transition-colors";

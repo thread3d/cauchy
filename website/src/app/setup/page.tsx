@@ -7,9 +7,9 @@ export const metadata = {
     "Install Cauchy on macOS, connect an assistant or API key, export highlights, and move reading sessions between Macs.",
 };
 
-const REPO_URL = "https://github.com/jerrydjin/cauchy";
+const REPO_URL = "https://github.com/thread3d/cauchy";
 const DOWNLOAD_URL =
-  "https://github.com/jerrydjin/cauchy/releases/latest/download/Cauchy.dmg";
+  "https://github.com/thread3d/cauchy/releases/latest/download/Cauchy.dmg";
 
 const inline =
   "text-primary underline underline-offset-4 decoration-secondary/40 hover:decoration-primary transition-colors";
@@ -93,7 +93,7 @@ export default function SetupPage() {
           </a>
           .
         </p>
-        <Block>git clone https://github.com/jerrydjin/cauchy.git &amp;&amp; cd cauchy &amp;&amp; ./scripts/run.sh</Block>
+        <Block>git clone https://github.com/thread3d/cauchy.git &amp;&amp; cd cauchy &amp;&amp; ./scripts/run.sh</Block>
 
         <h2 className="text-2xl mt-12 mb-4 text-primary font-medium">
           Choose an assistant
@@ -189,7 +189,7 @@ export default function SetupPage() {
         <p>
           Open an issue at{" "}
           <a href={`${REPO_URL}/issues`} target="_blank" rel="noopener noreferrer" className={inline}>
-            github.com/jerrydjin/cauchy/issues
+            github.com/thread3d/cauchy/issues
           </a>
           , or read the rest of the{" "}
           <Link href="/faq" className={inline}>

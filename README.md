@@ -2,7 +2,7 @@
 
 Native macOS PDF reader for dense technical textbooks, mathematics papers, and academic problem sets.
 
-**[Download Cauchy for Mac](https://github.com/jerrydjin/cauchy/releases/latest/download/Cauchy.dmg)**
+**[Download Cauchy for Mac](https://github.com/thread3d/cauchy/releases/latest/download/Cauchy.dmg)**
 
 Needs macOS 26.0 or later. The first time you open it, go to System Settings, then Privacy & Security, and click Open Anyway.
 

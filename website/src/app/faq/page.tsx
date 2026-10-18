@@ -7,7 +7,7 @@ export const metadata = {
     "What Cauchy is, which assistants it supports, where your data lives, and why it ships unsandboxed.",
 };
 
-const REPO_URL = "https://github.com/jerrydjin/cauchy";
+const REPO_URL = "https://github.com/thread3d/cauchy";
 
 const inline =
   "text-primary underline underline-offset-4 decoration-secondary/40 hover:decoration-primary transition-colors";
@@ -236,7 +236,7 @@ export default function FAQPage() {
             </a>
             , at{" "}
             <a href={REPO_URL} target="_blank" rel="noopener noreferrer" className={inline}>
-              github.com/jerrydjin/cauchy
+              github.com/thread3d/cauchy
             </a>
             . Building needs Xcode 26 or later with the macOS 26 SDK; the{" "}
             <a href={`${REPO_URL}#open-in-xcode`} target="_blank" rel="noopener noreferrer" className={inline}>

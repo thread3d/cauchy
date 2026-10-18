@@ -667,11 +667,11 @@
 			ENABLE_HARDENED_RUNTIME = YES;
 			GENERATE_INFOPLIST_FILE = YES;
 			INFOPLIST_FILE = Cauchy/Info.plist;
-			INFOPLIST_KEY_CFBundleDisplayName = "cauchy";
+			INFOPLIST_KEY_CFBundleDisplayName = "Cauchy";
 			INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 			LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/../Frameworks");
 			MACOSX_DEPLOYMENT_TARGET = 26.0;
-			MARKETING_VERSION = 1.2.0;
+			MARKETING_VERSION = 1.2.1;
 			PRODUCT_BUNDLE_IDENTIFIER = com.cauchy.app;
 			PRODUCT_NAME = "$(TARGET_NAME)";
 			SWIFT_EMIT_LOC_STRINGS = YES;
@@ -687,11 +687,11 @@
 			ENABLE_HARDENED_RUNTIME = YES;
 			GENERATE_INFOPLIST_FILE = YES;
 			INFOPLIST_FILE = Cauchy/Info.plist;
-			INFOPLIST_KEY_CFBundleDisplayName = "cauchy";
+			INFOPLIST_KEY_CFBundleDisplayName = "Cauchy";
 			INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 			LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/../Frameworks");
 			MACOSX_DEPLOYMENT_TARGET = 26.0;
-			MARKETING_VERSION = 1.2.0;
+			MARKETING_VERSION = 1.2.1;
 			PRODUCT_BUNDLE_IDENTIFIER = com.cauchy.app;
 			PRODUCT_NAME = "$(TARGET_NAME)";
 			SWIFT_EMIT_LOC_STRINGS = YES;

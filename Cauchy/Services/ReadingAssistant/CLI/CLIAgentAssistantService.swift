@@ -1,5 +1,4 @@
 import Foundation
-import FoundationModels
 
 /// Reading assistant backed by a locally installed agent CLI (Claude Code,
 /// Codex, or Antigravity). The user signs in once in their terminal with their own plan; the
@@ -209,52 +208,25 @@ final class CLIAgentAssistantService: ReadingAssistantProtocol {
 /// used by reference indexing. Each request is isolated, read-only, and has no
 /// tools; the indexer still checks every result against the PDF text.
 struct CLIIndexLanguageModel: LanguageModel {
-    typealias Executor = CLIIndexLanguageModelExecutor
-
     let connectorID: AssistantConnectorID
     let modelID: String?
 
-    var capabilities: LanguageModelCapabilities { LanguageModelCapabilities([]) }
-
-    var executorConfiguration: CLIIndexLanguageModelExecutor.Configuration {
-        .init(connectorID: connectorID, modelID: modelID)
-    }
-}
-
-struct CLIIndexLanguageModelExecutor: LanguageModelExecutor {
-    typealias Model = CLIIndexLanguageModel
-
-    struct Configuration: Hashable, Sendable {
-        let connectorID: AssistantConnectorID
-        let modelID: String?
-    }
-
-    let configuration: Configuration
-
-    init(configuration: Configuration) throws {
-        self.configuration = configuration
-    }
-
-    func prewarm(model: CLIIndexLanguageModel, transcript: Transcript) {}
-
-    func respond(
-        to request: LanguageModelExecutorGenerationRequest,
-        model: CLIIndexLanguageModel,
-        streamingInto channel: LanguageModelExecutorGenerationChannel
+    func streamResponse(
+        to prompt: CloudPrompt,
+        onDelta: @Sendable (String) async -> Void
     ) async throws {
-        let connector = configuration.connectorID.connector
+        let connector = connectorID.connector
         guard let binary = connector.binaryName,
               let binaryURL = await CLIAgentRunner.locateBinary(named: binary) else {
-            throw ReadingAssistantError.notAvailable(.cliNotInstalled(configuration.connectorID))
+            throw ReadingAssistantError.notAvailable(.cliNotInstalled(connectorID))
         }
-        let prompt = CloudPrompt(transcript: request.transcript)
         let question = prompt.sendableTurns.last?.text ?? ""
         let instructions = prompt.instructions ?? ""
         let fullPrompt = instructions + "\n\n" + question
-        let modelArguments = configuration.modelID.map { ["--model", $0] } ?? []
+        let modelArguments = modelID.map { ["--model", $0] } ?? []
         let arguments: [String]
         var parser: any CLIAgentStreamParsing
-        switch configuration.connectorID {
+        switch connectorID {
         case .codex:
             arguments = ["exec", fullPrompt, "--json", "--skip-git-repo-check",
                          "--sandbox", "read-only", "-c", "model_reasoning_effort=\"medium\""]
@@ -284,9 +256,6 @@ struct CLIIndexLanguageModelExecutor: LanguageModelExecutor {
         guard let answer = parser.finalText, !answer.isEmpty else {
             throw ReadingAssistantError.api("\(connector.name) produced no index response.")
         }
-        await channel.send(.response(
-            entryID: UUID().uuidString,
-            action: .appendText(answer, segmentID: nil, tokenCount: 0)
-        ))
+        await onDelta(answer)
     }
 }

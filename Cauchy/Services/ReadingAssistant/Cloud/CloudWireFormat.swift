@@ -49,8 +49,8 @@ struct CloudPrompt: Sendable {
                 if let text = Self.text(from: entry.segments), !text.isEmpty {
                     turns.append(Turn(role: .assistant, text: text))
                 }
-            case .reasoning, .toolCalls, .toolOutput:
-                break // No native reasoning or tool support in this mapper yet.
+            case .toolCalls, .toolOutput:
+                break // No native tool support in this mapper yet.
             @unknown default:
                 break
             }

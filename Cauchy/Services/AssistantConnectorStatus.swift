@@ -1,5 +1,4 @@
 import Foundation
-import FoundationModels
 
 /// Whether a connector can actually answer a question on this Mac right now.
 enum ConnectorStatus: Equatable {
@@ -49,13 +48,17 @@ extension AssistantConnector {
     var availability: ReadingAssistantAvailability {
         switch access {
         case .onDevice:
-            return FoundationModelsReadingAssistantService.localAvailability
+            // Covers paths that did not go through the launch refresh (headless
+            // probes, a window restored before Ollama started). The task hops
+            // off the main actor, so it is safe from a view body.
+            OllamaService.shared.refreshIfNeeded()
+            return OllamaService.shared.availability
         case .cliSignIn(let binary, _, _):
             return CLIAgentRunner.locateBinary(named: binary) == nil
                 ? .cliNotInstalled(id)
                 : .available(id)
         case .apiKey(let provider):
-            return FoundationModelsReadingAssistantService.availability(for: provider)
+            return LanguageModelReadingAssistantService.availability(for: provider)
         }
     }
 
@@ -64,18 +67,14 @@ extension AssistantConnector {
         switch availability {
         case .available:
             switch access {
-            case .onDevice: return .ready("On-device")
+            case .onDevice: return .ready("Local")
             // The binary is there; whether the user is still signed in only
             // surfaces when an answer actually fails.
             case .cliSignIn: return .ready("Installed")
             case .apiKey: return .ready("Key saved")
             }
-        case .cliNotInstalled, .apiKeyMissing, .intelligenceNotEnabled:
+        case .cliNotInstalled, .apiKeyMissing, .ollamaNotRunning, .ollamaNoModels:
             return .needsSetup(setupHint)
-        case .deviceNotEligible:
-            return .unavailable("This Mac isn't eligible for Apple Intelligence.")
-        case .modelNotReady:
-            return .unavailable("The on-device model is still downloading.")
         case .unavailable:
             return .unavailable("Not available right now.")
         }

@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: xcode-27
+    runs-on: macos-26
 
     permissions:
       contents: write # needed for creating a release
@@ -136,7 +136,7 @@ jobs:
           mkdir -p dmg_source
           cp -R build/Cauchy.xcarchive/Products/Applications/Cauchy.app dmg_source/
 
-          # Create the DMG (using the modern diskutil command for macOS 27+)
+          # Create the DMG (using the modern diskutil command for macOS 26+)
           rm -f Cauchy.dmg
           diskutil image create from dmg_source --volumeName "Cauchy" --format UDZO Cauchy.dmg
 

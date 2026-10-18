@@ -53,7 +53,7 @@ App state is persisted, so many flows are verifiable from the shell:
 - File-open path: `open -a <app> file.pdf` (cold and while running) → assert exactly one workspace per document URL.
 - Headless modes: `Cauchy --benchmark-indexing <pdf>`, `Cauchy --probe-retrieval <pdf> <query>`.
 
-`Logger` output does not show up in `log show` on this macOS 27 beta even at
+`Logger` output does not show up in `log show` on this macOS 26 SDK even at
 error level — use marker files (`try? Data(...).write(to: /tmp/...)`) for
 which-code-path-ran questions instead.
 

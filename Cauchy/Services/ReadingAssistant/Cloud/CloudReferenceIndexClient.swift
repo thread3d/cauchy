@@ -1,9 +1,9 @@
 import Foundation
 
 /// The reference-index jobs that need a cloud provider directly rather than
-/// through a `LanguageModelSession`: page extraction with vision, and the two
-/// repair passes. All three vendors accept an inline PNG, so any BYOK key can
-/// drive a vision re-index.
+/// the shared text path: page extraction with vision, and the two repair
+/// passes. All three vendors accept an inline PNG, so any BYOK key can drive a
+/// vision re-index.
 struct CloudReferenceIndexClient: Sendable {
     let provider: CloudAPIProvider
     let apiKey: String

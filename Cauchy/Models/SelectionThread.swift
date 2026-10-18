@@ -71,7 +71,7 @@ struct AnswerEvidence: Codable, Equatable, Sendable {
     var retrievedPassageCount: Int
     var providerID: String
     /// Requested model id when Cauchy controls it; nil for connector-managed
-    /// defaults such as Apple Intelligence and Antigravity.
+    /// defaults such as Ollama and Antigravity.
     var modelID: String?
     /// nil for replies saved before exact source locations were recorded.
     /// These locate supplied inputs; they do not certify the answer's claims.

@@ -3,31 +3,6 @@ import Foundation
 enum ReferenceIndexPromptBuilder {
     static let maxPageCharacters = 12_000
 
-    /// The on-device model's context window is ~4k tokens, shared with
-    /// instructions and the generated output — page text gets a tighter budget.
-    static let maxPageCharactersOnDevice = 6_000
-
-    /// Compact instructions for the on-device guided-generation path: the
-    /// output shape is enforced by the @Generable schema, so all JSON-format
-    /// prose is dropped to leave room in the small context window.
-    static let onDeviceInstructions = """
-    You extract numbered academic references (theorems, lemmas, definitions, propositions, equations, etc.) from one PDF page. The document may be from any field — pure mathematics, machine learning, the sciences — so take every subject and every name from the page itself.
-
-    Rules:
-    - Include ONLY numbered references that appear in the provided page text. Do not invent any.
-    - Keep reference numbers exactly as printed (e.g. "1.4", "2.3.1").
-    - name is the printed title only, e.g. "Definition 3.2 (Compactness)" → name "Compactness", "Assumption 2 (Bounded Gradients)" → name "Bounded Gradients"; leave empty when none is printed. Never carry a name over from these examples — take it only from this page.
-    - Extract definitions/statements introduced here, not citations such as "by Theorem 2.1" or "the proof of Theorem 2.1". A mention does not define a reference.
-    - Ignore figures and their captions. They are indexed directly from the printed PDF text.
-    - For equations: the body is ONLY the equation itself, no surrounding prose.
-    - For theorems/lemmas/definitions/examples: the body is ONLY the statement, never the proof.
-    - Write all mathematics inside $...$ (inline) or $$...$$ (display) LaTeX delimiters; never emit LaTeX commands outside delimiters. Prose stays plain text.
-    - Fix PDF extraction artifacts: ℝ → $\\mathbb{R}$, unicode sub/superscripts, norm bars ‖x‖ → $\\left\\| x \\right\\|$, broken spacing.
-    - Prefer \\leq and \\geq over \\leqslant and \\geqslant.
-    - Ignore table-of-contents, index, and list-of-results pages: extract a reference only when its full statement or equation body appears on this page, not just its title and a page number.
-    - If the page has no numbered references, return an empty list.
-    """
-
     static let textArtifactHints = """
     Text-layer artifact hints (when no image is provided):
     - Map double-struck unicode to LaTeX: ℝ → $\\mathbb{R}$, ℕ → $\\mathbb{N}$, ℤ → $\\mathbb{Z}$, ℂ → $\\mathbb{C}$
@@ -91,19 +66,6 @@ enum ReferenceIndexPromptBuilder {
         Page text:
         ---
         \(truncatedPageText(pageText))
-        ---
-        """
-    }
-
-    /// On-device prompt: assumes the caller already budgeted `pageText` to fit
-    /// the small context window (it may be a split fragment of the page).
-    static func onDeviceUserPrompt(pageText: String, pageIndex: Int) -> String {
-        """
-        Extract and format every numbered reference on PDF page \(pageIndex + 1).
-
-        Page text:
-        ---
-        \(pageText)
         ---
         """
     }

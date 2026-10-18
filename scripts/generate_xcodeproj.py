@@ -165,7 +165,7 @@ emit(f'\t\t{IDS["tests_dep"]} /* PBXTargetDependency */ = {{ isa = PBXTargetDepe
 emit("/* End PBXTargetDependency section */\n")
 
 emit("/* Begin PBXProject section */")
-emit(f'\t\t{IDS["project"]} /* Project object */ = {{ isa = PBXProject; attributes = {{ BuildIndependentTargetsInParallel = 1; LastSwiftUpdateCheck = 2700; LastUpgradeCheck = 2700; }}; buildConfigurationList = {IDS["cl_project"]}; compatibilityVersion = "Xcode 14.0"; developmentRegion = en; hasScannedForEncodings = 0; knownRegions = (en, Base,); mainGroup = {IDS["root"]}; packageReferences = ({IDS["swiftmath_pkg"]} /* XCLocalSwiftPackageReference "SwiftMath" */, {IDS["swiftterm_pkg"]},); productRefGroup = {IDS["products"]}; projectDirPath = ""; projectRoot = ""; targets = ({IDS["target"]}, {IDS["tests_target"]},); }};')
+emit(f'\t\t{IDS["project"]} /* Project object */ = {{ isa = PBXProject; attributes = {{ BuildIndependentTargetsInParallel = 1; LastSwiftUpdateCheck = 2600; LastUpgradeCheck = 2600; }}; buildConfigurationList = {IDS["cl_project"]}; compatibilityVersion = "Xcode 14.0"; developmentRegion = en; hasScannedForEncodings = 0; knownRegions = (en, Base,); mainGroup = {IDS["root"]}; packageReferences = ({IDS["swiftmath_pkg"]} /* XCLocalSwiftPackageReference "SwiftMath" */, {IDS["swiftterm_pkg"]},); productRefGroup = {IDS["products"]}; projectDirPath = ""; projectRoot = ""; targets = ({IDS["target"]}, {IDS["tests_target"]},); }};')
 emit("/* End PBXProject section */\n")
 
 emit("/* Begin PBXResourcesBuildPhase section */")
@@ -201,7 +201,7 @@ def target_settings(cid, name):
     emit('\t\t\tINFOPLIST_KEY_CFBundleDisplayName = "cauchy";')
     emit('\t\t\tINFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";')
     emit('\t\t\tLD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/../Frameworks");')
-    emit('\t\t\tMACOSX_DEPLOYMENT_TARGET = 27.0;')
+    emit('\t\t\tMACOSX_DEPLOYMENT_TARGET = 26.0;')
     emit('\t\t\tMARKETING_VERSION = 1.0;')
     emit('\t\t\tPRODUCT_BUNDLE_IDENTIFIER = com.cauchy.app;')
     emit('\t\t\tPRODUCT_NAME = "$(TARGET_NAME)";')
@@ -212,8 +212,8 @@ def target_settings(cid, name):
 emit("/* Begin XCBuildConfiguration section */")
 # ENABLE_TESTABILITY is what makes `@testable import Cauchy` resolve; without
 # it the test bundle cannot see the app module at all.
-emit(f'\t\t{IDS["debug_p"]} /* Debug */ = {{ isa = XCBuildConfiguration; buildSettings = {{ ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; COPY_PHASE_STRIP = NO; DEBUG_INFORMATION_FORMAT = dwarf; ENABLE_TESTABILITY = YES; ENABLE_STRICT_OBJC_MSGSEND = YES; GCC_DYNAMIC_NO_PIC = NO; MACOSX_DEPLOYMENT_TARGET = 27.0; MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE; ONLY_ACTIVE_ARCH = YES; SDKROOT = macosx; SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; }}; name = Debug; }};')
-emit(f'\t\t{IDS["release_p"]} /* Release */ = {{ isa = XCBuildConfiguration; buildSettings = {{ ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; COPY_PHASE_STRIP = NO; DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym"; ENABLE_STRICT_OBJC_MSGSEND = YES; MACOSX_DEPLOYMENT_TARGET = 27.0; MTL_ENABLE_DEBUG_INFO = NO; SDKROOT = macosx; SWIFT_COMPILATION_MODE = wholemodule; }}; name = Release; }};')
+emit(f'\t\t{IDS["debug_p"]} /* Debug */ = {{ isa = XCBuildConfiguration; buildSettings = {{ ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; COPY_PHASE_STRIP = NO; DEBUG_INFORMATION_FORMAT = dwarf; ENABLE_TESTABILITY = YES; ENABLE_STRICT_OBJC_MSGSEND = YES; GCC_DYNAMIC_NO_PIC = NO; MACOSX_DEPLOYMENT_TARGET = 26.0; MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE; ONLY_ACTIVE_ARCH = YES; SDKROOT = macosx; SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; }}; name = Debug; }};')
+emit(f'\t\t{IDS["release_p"]} /* Release */ = {{ isa = XCBuildConfiguration; buildSettings = {{ ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; COPY_PHASE_STRIP = NO; DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym"; ENABLE_STRICT_OBJC_MSGSEND = YES; MACOSX_DEPLOYMENT_TARGET = 26.0; MTL_ENABLE_DEBUG_INFO = NO; SDKROOT = macosx; SWIFT_COMPILATION_MODE = wholemodule; }}; name = Release; }};')
 target_settings(IDS["debug_t"], "Debug")
 target_settings(IDS["release_t"], "Release")
 
@@ -226,7 +226,7 @@ def tests_settings(cid, name):
     emit('\t\t\tTEST_HOST = "$(BUILT_PRODUCTS_DIR)/Cauchy.app/Contents/MacOS/Cauchy";')
     emit('\t\t\tCODE_SIGN_STYLE = Automatic;')
     emit('\t\t\tGENERATE_INFOPLIST_FILE = YES;')
-    emit('\t\t\tMACOSX_DEPLOYMENT_TARGET = 27.0;')
+    emit('\t\t\tMACOSX_DEPLOYMENT_TARGET = 26.0;')
     emit('\t\t\tPRODUCT_BUNDLE_IDENTIFIER = com.cauchy.app.tests;')
     emit('\t\t\tPRODUCT_NAME = "$(TARGET_NAME)";')
     emit('\t\t\tSWIFT_VERSION = 6.0;')
@@ -292,7 +292,7 @@ tests_ref = buildable_reference(12, IDS["tests_target"], "CauchyTests.xctest", "
 
 scheme = f"""<?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "2700"
+   LastUpgradeVersion = "2600"
    version = "1.7">
    <BuildAction
       parallelizeBuildables = "YES"

@@ -1,5 +1,4 @@
 import Foundation
-import FoundationModels
 
 /// Names a conversation the way a person would: from what was actually asked
 /// and answered, not from the first few characters the user typed. A highlight
@@ -10,8 +9,8 @@ import FoundationModels
 /// This deliberately does not go through the chat connector. Naming a thread is
 /// a throwaway one-line job — it must not spawn a CLI child process, must not
 /// spend a subscription turn, and must not queue behind the answer the user is
-/// waiting for. It prefers the free on-device model and only falls back to a
-/// BYOK key when Apple Intelligence is unavailable, exactly like reference
+/// waiting for. It prefers the free local Ollama model and only falls back to a
+/// BYOK key when Ollama is unavailable, exactly like reference
 /// indexing does.
 @MainActor
 enum ThreadTitleGenerator {
@@ -23,7 +22,8 @@ enum ThreadTitleGenerator {
     static let maxCharacters = 58
 
     static var isAvailable: Bool {
-        FoundationModelsReadingAssistantService.localAvailability.isAvailable
+        OllamaService.shared.refreshIfNeeded()
+        return OllamaService.shared.availability.isAvailable
             || AssistantPreferences.cloudAssistEnabled
     }
 
@@ -67,7 +67,7 @@ enum ThreadTitleGenerator {
         }
 
         do {
-            let session = LanguageModelSession(model: model, instructions: brief)
+            let session = ReadingLanguageModelSession(model: model, instructions: brief)
             let response = try await session.respond(to: prompt)
             guard let title = sanitize(response.content) else { return nil }
             // The brief can ask for a grounded title; it cannot guarantee one.
@@ -132,8 +132,9 @@ enum ThreadTitleGenerator {
     ]
 
     private static func model() -> (any LanguageModel)? {
-        if FoundationModelsReadingAssistantService.localAvailability.isAvailable {
-            return SystemLanguageModel.default
+        OllamaService.shared.refreshIfNeeded()
+        if let local = AssistantPreferences.localModel() {
+            return local
         }
         // The cheapest model the active provider offers: a four-word title does
         // not need reasoning, and this runs once per thread.

@@ -1,6 +1,5 @@
 import AppKit
 import Foundation
-import FoundationModels
 import Observation
 import PDFKit
 import UniformTypeIdentifiers
@@ -632,7 +631,7 @@ final class WorkspaceViewModel: Equatable {
     func regenerateThreadTitle(for highlight: Highlight) {
         guard titleTasks[highlight.id] == nil else { return }
         guard ThreadTitleGenerator.isAvailable else {
-            errorMessage = "Naming a thread needs Apple Intelligence or an API key."
+            errorMessage = "Naming a thread needs Ollama or an API key."
             return
         }
         startNaming(highlight)
@@ -748,7 +747,12 @@ final class WorkspaceViewModel: Equatable {
             modelDescription = connector.label(for: choice)
             switch connector.access {
             case .onDevice:
-                forcedModel = SystemLanguageModel.default
+                guard let local = AssistantPreferences.localModel(named: chosenModelID) else {
+                    referenceIndexError = "Start Ollama and install a local model before indexing."
+                    return
+                }
+                forcedModel = local
+                modelDescription = "Ollama · \(connector.label(for: choice))"
             case .apiKey(let provider):
                 guard let key = KeychainService.loadKey(for: provider) else {
                     referenceIndexError = "Add your \(provider.vendor) API key in Settings."
@@ -779,7 +783,7 @@ final class WorkspaceViewModel: Equatable {
     func resetAllReferenceIndexes() {
         let alert = NSAlert()
         alert.messageText = "Reset All Reference Indexes?"
-        alert.informativeText = "Cached theorem/definition indexes for all documents will be deleted and rebuilt the next time each document is opened. Re-indexing runs in the background and uses the on-device model (or a saved API key)."
+        alert.informativeText = "Cached theorem/definition indexes for all documents will be deleted and rebuilt the next time each document is opened. Re-indexing runs in the background and uses the local Ollama model (or a saved API key)."
         alert.addButton(withTitle: "Reset All")
         alert.addButton(withTitle: "Cancel")
         guard alert.runModal() == .alertFirstButtonReturn else { return }
@@ -976,25 +980,37 @@ final class WorkspaceViewModel: Equatable {
         isIndexingReferences = true
         referenceIndexProgress = 0
 
-        // Indexing prefers the free on-device model; a cloud key is only a fallback
-        // when Apple Intelligence is unavailable. Independent of which
-        // provider answers chat questions.
-        if forcedModel == nil {
-            let availability = referenceIndexingAvailability
-            guard availability.isAvailable else {
-                isIndexingReferences = false
-                referenceIndexError = referenceIndexUnavailableMessage(for: availability)
-                return
-            }
-        }
-
-        let model = forcedModel ?? referenceIndexModel()
-
+        // Indexing prefers the local Ollama model; a cloud key is only a
+        // fallback when Ollama is unavailable. Independent of which provider
+        // answers chat questions. Availability is resolved inside the task:
+        // the launch discovery may still be in flight when a restored document
+        // opens, and deciding early would show a spurious failure.
         referenceIndexTask = Task {
             // Give the UI a moment to show the indexing state, preventing
             // SwiftUI from missing the state change if the cache load is instantaneous.
             try? await Task.sleep(for: .milliseconds(150))
-            
+
+            var resolvedModel = forcedModel
+            if resolvedModel == nil {
+                await OllamaService.shared.refresh()
+                let availability = referenceIndexingAvailability
+                guard availability.isAvailable else {
+                    await MainActor.run {
+                        isIndexingReferences = false
+                        referenceIndexError = referenceIndexUnavailableMessage(for: availability)
+                    }
+                    return
+                }
+                resolvedModel = referenceIndexModel()
+            }
+            guard let model = resolvedModel else {
+                await MainActor.run {
+                    isIndexingReferences = false
+                    referenceIndexError = "Reference indexing is unavailable right now."
+                }
+                return
+            }
+
             do {
                 let outcome = try await LLMReferenceIndexBuilder.build(
                     documentURL: url,
@@ -1049,7 +1065,7 @@ final class WorkspaceViewModel: Equatable {
     }
 
     private var referenceIndexingAvailability: ReadingAssistantAvailability {
-        let local = FoundationModelsReadingAssistantService.localAvailability
+        let local = OllamaService.shared.availability
         if local.isAvailable {
             return local
         }
@@ -1060,31 +1076,29 @@ final class WorkspaceViewModel: Equatable {
     }
 
     private func referenceIndexModel() -> any LanguageModel {
-        if FoundationModelsReadingAssistantService.localAvailability.isAvailable {
-            return SystemLanguageModel.default
+        if let model = AssistantPreferences.localModel() {
+            return model
         }
         if let model = AssistantPreferences.activeCloudModel() {
             return model
         }
-        return SystemLanguageModel.default
+        return OllamaLanguageModel(modelName: OllamaCatalog.defaultModelID ?? "")
     }
 
     private func referenceIndexUnavailableMessage(for availability: ReadingAssistantAvailability) -> String {
         switch availability {
         case .available:
             "Reference indexing is unavailable."
-        case .deviceNotEligible:
-            "Reference indexing unavailable — this device does not support Apple Intelligence."
-        case .intelligenceNotEnabled:
-            "Reference indexing unavailable — enable Apple Intelligence or add an API key."
-        case .modelNotReady:
-            "Reference indexing unavailable — the on-device model is not ready."
+        case .ollamaNotRunning:
+            "Reference indexing unavailable — start Ollama on this Mac."
+        case .ollamaNoModels:
+            "Reference indexing unavailable — install a model in Ollama."
         case .apiKeyMissing(let provider):
             "Reference indexing unavailable — add your \(provider.vendor) API key in Settings."
         case .cliNotInstalled:
-            "Reference indexing unavailable — add an API key or enable Apple Intelligence."
+            "Reference indexing unavailable — add an API key or start Ollama."
         case .unavailable:
-            "Reference indexing unavailable — add an API key or enable Apple Intelligence."
+            "Reference indexing unavailable — add an API key or start Ollama."
         }
     }
 

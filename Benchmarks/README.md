@@ -153,9 +153,10 @@ production-path acceptance result are documented in
 born-digital corpus aggregate.
 For local diagnostics, `Cauchy --probe-ocr <pdf> <page> fast --json` prints
 Vision's transcript candidates. Add `--output <dir>` to render crops with the
-accepted regions outlined. `Cauchy --probe-vision <pdf> <page>` asks the
-on-device image model for visible numbered references. Only the conservative
-local OCR candidate detector participates in production image-only indexing;
+accepted regions outlined. `Cauchy --probe-vision <pdf> <page>` asks an installed
+Ollama vision model for visible numbered references; it reports the limitation
+when no installed model advertises vision support. Only the conservative local
+OCR candidate detector participates in production image-only indexing;
 image-model guesses do not.
 
 ## Review protocol

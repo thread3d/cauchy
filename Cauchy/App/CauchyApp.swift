@@ -105,8 +105,12 @@ struct CauchyApp: App {
                 }
             }
         } else if !Self.isHostingTests {
-            // Normal GUI launch: sweep reference-index caches that no document
-            // has touched in months (content-hashed names are never reused).
+            // Normal GUI launch: discover the local Ollama models, and sweep
+            // reference-index caches that no document has touched in months
+            // (content-hashed names are never reused).
+            Task { @MainActor in
+                await OllamaService.shared.refresh()
+            }
             Task.detached(priority: .background) {
                 ReferenceIndexCacheStore.pruneStaleCaches()
             }

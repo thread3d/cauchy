@@ -1,5 +1,4 @@
 import Foundation
-import FoundationModels
 import PDFKit
 
 enum ReferenceIndexBuildError: LocalizedError {
@@ -873,14 +872,14 @@ enum LLMReferenceIndexBuilder {
         // just those pages; provenance stays with the original bulk build.
         var merged: [ReferenceKey: IndexedReference] = [:]
         var pagesToProcess = Array(0..<pageCount)
-        var builtWith = modelDescription ?? cloudModel?.provider.rawValue ?? "on-device"
+        var builtWith = modelDescription ?? modelLabel(for: model)
         if let cached {
             merged = cached.asSnapshot(pageCount: pageCount).entries
             pagesToProcess = cached.failedPageIndices.filter { $0 < pageCount }
             builtWith = cached.builtWith
         }
 
-        let concurrency = (model is SystemLanguageModel || model is CLIIndexLanguageModel)
+        let concurrency = (model is OllamaLanguageModel || model is CLIIndexLanguageModel)
             ? maxConcurrentPagesOnDevice
             : maxConcurrentPages
 
@@ -1421,33 +1420,14 @@ enum LLMReferenceIndexBuilder {
         )
     }
 
-    /// Routes one page to the right extraction path: guided generation for the
-    /// on-device model (schema-constrained, no JSON parsing), otherwise the
-    /// raw-JSON text/vision path with parse repair.
+    /// Every model now takes the raw-JSON text path, with the same parse and
+    /// repair passes the cloud providers use. Ollama reports a context-window
+    /// error the same way, so the split-and-retry logic below still applies.
     nonisolated private static func extractPageReferences(
         payload: PageIndexPayload,
         pageIndex: Int,
         modelHandle: ModelHandle
     ) async throws -> LLMPageReferenceResponse {
-        if modelHandle.cloudVision == nil,
-           let systemModel = modelHandle.model as? SystemLanguageModel {
-            let chunks = LLMReferenceIndexSupport.declarationContextChunks(
-                pageText: payload.pageText,
-                sourceText: payload.sourceText,
-                equationLabelX: payload.equationLabelX
-            )
-            var references: [LLMPageReferenceResponse.Item] = []
-            for chunk in chunks {
-                let response = try await requestGuidedPageExtraction(
-                    pageText: chunk,
-                    pageIndex: pageIndex,
-                    model: systemModel
-                )
-                references.append(contentsOf: response.references)
-            }
-            return LLMPageReferenceResponse(references: references)
-        }
-
         let rawResponse = try await requestPageExtraction(
             payload: payload,
             pageIndex: pageIndex,
@@ -1459,54 +1439,24 @@ enum LLMReferenceIndexBuilder {
         return parsed
     }
 
-    @MainActor
-    private static func requestGuidedPageExtraction(
-        pageText: String,
-        pageIndex: Int,
-        model: SystemLanguageModel,
-        depth: Int = 0
-    ) async throws -> LLMPageReferenceResponse {
-        do {
-            let session = LanguageModelSession(
-                model: model,
-                instructions: ReferenceIndexPromptBuilder.onDeviceInstructions
-            )
-            let prompt = ReferenceIndexPromptBuilder.onDeviceUserPrompt(
-                pageText: pageText,
-                pageIndex: pageIndex
-            )
-            let response = try await session.respond(to: prompt, generating: GeneratedPageReferences.self)
-            return response.content.asResponse
-        } catch {
-            // Even a budgeted page can overflow the window once the schema and
-            // generated output are counted; split at a paragraph boundary and
-            // index each half separately.
-            guard isContextOverflow(error), depth < 2, pageText.count >= 1_000 else {
-                throw error
-            }
-            let (head, tail) = splitNearMidpoint(pageText)
-            let first = try await requestGuidedPageExtraction(
-                pageText: head, pageIndex: pageIndex, model: model, depth: depth + 1
-            )
-            let second = try await requestGuidedPageExtraction(
-                pageText: tail, pageIndex: pageIndex, model: model, depth: depth + 1
-            )
-            return LLMPageReferenceResponse(references: first.references + second.references)
-        }
-    }
-
-    /// The session throws the legacy GenerationError on macOS 27 (observed);
-    /// the replacement LanguageModelError case is checked too for when the
-    /// framework migrates.
     nonisolated private static func isContextOverflow(_ error: Error) -> Bool {
         if let error = error as? LanguageModelError, case .contextSizeExceeded = error {
             return true
         }
-        if let error = error as? LanguageModelSession.GenerationError,
-           case .exceededContextWindowSize = error {
-            return true
-        }
         return false
+    }
+
+    nonisolated private static func modelLabel(for model: any LanguageModel) -> String {
+        if let ollama = model as? OllamaLanguageModel {
+            return "Ollama · \(ollama.modelName)"
+        }
+        if let cloud = model as? CloudLanguageModel {
+            return cloud.provider.rawValue
+        }
+        if model is CLIIndexLanguageModel {
+            return "CLI"
+        }
+        return "on-device"
     }
 
     /// Splits at the paragraph (or line) break closest to the midpoint so a
@@ -1617,7 +1567,7 @@ enum LLMReferenceIndexBuilder {
         pageIndex: Int,
         modelHandle: ModelHandle
     ) async throws -> String {
-        let session = LanguageModelSession(
+        let session = ReadingLanguageModelSession(
             model: modelHandle.model,
             instructions: ReferenceIndexPromptBuilder.instructions
         )
@@ -1644,7 +1594,7 @@ enum LLMReferenceIndexBuilder {
         previousOutput: String,
         modelHandle: ModelHandle
     ) async throws -> String {
-        let session = LanguageModelSession(
+        let session = ReadingLanguageModelSession(
             model: modelHandle.model,
             instructions: ReferenceIndexPromptBuilder.instructions
         )
@@ -1671,7 +1621,7 @@ enum LLMReferenceIndexBuilder {
         previousOutput: String,
         modelHandle: ModelHandle
     ) async throws -> String {
-        let session = LanguageModelSession(
+        let session = ReadingLanguageModelSession(
             model: modelHandle.model,
             instructions: ReadingPromptBuilder.latexRepairInstructions()
         )
@@ -1680,7 +1630,7 @@ enum LLMReferenceIndexBuilder {
     }
 
     @MainActor
-    private static func streamResponse(session: LanguageModelSession, prompt: String) async throws -> String {
+    private static func streamResponse(session: ReadingLanguageModelSession, prompt: String) async throws -> String {
         let stream = session.streamResponse(to: prompt)
         var accumulated = ""
         for try await snapshot in stream {

@@ -1,11 +1,11 @@
 import Foundation
-import FoundationModels
 
 enum ReadingAssistantAvailability: Equatable {
     case available(AssistantConnectorID)
-    case deviceNotEligible
-    case intelligenceNotEnabled
-    case modelNotReady
+    /// The local Ollama server could not be reached.
+    case ollamaNotRunning
+    /// Ollama is running but has no chat model installed.
+    case ollamaNoModels
     case apiKeyMissing(CloudAPIProvider)
     case cliNotInstalled(AssistantConnectorID)
     case unavailable
@@ -57,12 +57,10 @@ enum ReadingAssistantError: LocalizedError {
             switch availability {
             case .available:
                 return nil
-            case .deviceNotEligible:
-                return "This Mac is not eligible for Apple Intelligence."
-            case .intelligenceNotEnabled:
-                return "Turn on Apple Intelligence in System Settings to use Ask."
-            case .modelNotReady:
-                return "The on-device model is still downloading. Try again shortly."
+            case .ollamaNotRunning:
+                return "Start Ollama on this Mac (`ollama serve`) to use your local model."
+            case .ollamaNoModels:
+                return "Install a model in Ollama first, for example `ollama pull llama3.2`."
             case .apiKeyMissing(let provider):
                 return "Add your \(provider.vendor) API key in Settings to use Ask."
             case .cliNotInstalled(let provider):

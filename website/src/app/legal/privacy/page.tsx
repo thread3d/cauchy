@@ -55,8 +55,8 @@ export default function PrivacyPage() {
         </p>
         <ul className="list-disc pl-6 space-y-2 mt-4">
           <li>
-            <strong className="text-primary">Apple Intelligence:</strong> runs on-device.
-            Nothing leaves your Mac.
+            <strong className="text-primary">Ollama:</strong> runs on-device through
+            the local server. Nothing leaves your Mac.
           </li>
           <li>
             <strong className="text-primary">Claude Code (Anthropic):</strong> Cauchy spawns
@@ -112,13 +112,13 @@ export default function PrivacyPage() {
           a credential transcript. Some connection checks send a tiny test message
           using your plan without sharing a document. API keys you add are stored in
           the Keychain and read to authenticate requests to their corresponding vendor.
-          Automatic selection prefers a ready CLI, then Apple Intelligence, then an
-          available API key; select Apple Intelligence explicitly for on-device answers.
+          Automatic selection prefers a ready CLI, then Ollama, then an available API
+          key; select Ollama explicitly for local answers.
         </p>
 
         <h2 className="text-2xl mt-12 mb-4 text-primary font-medium">Reference Indexing</h2>
         <p>
-          Building the reference index prefers on-device Apple Intelligence. If it is
+          Building the reference index prefers the local Ollama model. If it is
           unavailable, a saved Gemini, Anthropic or OpenAI API key can supply the
           fallback. You can also choose an available assistant model when rebuilding.
           Cloud API indexing can send page text and rendered images of individual

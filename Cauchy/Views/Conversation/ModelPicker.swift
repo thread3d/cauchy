@@ -29,8 +29,14 @@ struct ModelPicker: View {
     private var anthropicToken = AssistantConnectorID.anthropicAPI.connector.defaultChoice.storageToken
     @AppStorage(AssistantPreferences.modelKey(for: .openaiAPI))
     private var openaiToken = AssistantConnectorID.openaiAPI.connector.defaultChoice.storageToken
+    /// Empty means "use whatever Ollama lists first"; the catalog is dynamic.
+    @AppStorage(AssistantPreferences.modelKey(for: .ollama))
+    private var ollamaToken = ""
 
     var body: some View {
+        // Reading the revision makes the menu rebuild when Ollama's model list
+        // arrives or changes.
+        let _ = OllamaService.shared.revision
         Menu {
             Toggle("Automatic", isOn: binding(for: .automatic))
 
@@ -57,6 +63,7 @@ struct ModelPicker: View {
         .fixedSize()
         .accessibilityLabel("Model: \(resolved.label)")
         .help("Choose where answers come from")
+        .task { OllamaService.shared.refreshIfNeeded() }
     }
 
     // MARK: - Menu items
@@ -136,7 +143,8 @@ struct ModelPicker: View {
         case .gemini: connector.choice(fromToken: geminiToken)
         case .anthropicAPI: connector.choice(fromToken: anthropicToken)
         case .openaiAPI: connector.choice(fromToken: openaiToken)
-        case .onDevice, .antigravity: .connectorDefault
+        case .ollama: connector.choice(fromToken: ollamaToken)
+        case .antigravity: .connectorDefault
         }
     }
 
@@ -161,7 +169,8 @@ struct ModelPicker: View {
             case .gemini: geminiToken = choice.storageToken
             case .anthropicAPI: anthropicToken = choice.storageToken
             case .openaiAPI: openaiToken = choice.storageToken
-            case .onDevice, .antigravity: break
+            case .ollama: ollamaToken = choice.storageToken
+            case .antigravity: break
             }
         }
         selectionToken = target.storageToken

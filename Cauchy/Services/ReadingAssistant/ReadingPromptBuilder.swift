@@ -2,10 +2,12 @@ import Foundation
 
 enum ReadingPromptBuilder {
     static func evidenceBudgets(for provider: AssistantConnectorID) -> (statements: Int, passages: Int) {
-        provider == .onDevice ? (1_200, 800) : (2_500, 4_000)
+        // Local Ollama models commonly run with a ~4k-token window, so they get
+        // the same conservative retrieval budget the old on-device model used.
+        provider == .ollama ? (1_200, 800) : (2_500, 4_000)
     }
 
-    static func instructions(for context: ReadingContext, provider: AssistantConnectorID = .onDevice) -> String {
+    static func instructions(for context: ReadingContext, provider: AssistantConnectorID = .ollama) -> String {
         var prompt = """
         You are helping someone read "\(context.documentTitle)".
 
@@ -30,14 +32,12 @@ enum ReadingPromptBuilder {
             """
         }
 
-        // Cloud and CLI models need the reminder that replies render inside the
-        // app's LaTeX engine; the on-device model already gets the contract below.
-        if provider != .onDevice {
-            prompt += """
+        // Every provider now streams from a general model; all of them need
+        // the reminder that replies render inside the app's LaTeX engine.
+        prompt += """
 
-            IMPORTANT: Your reply is rendered by a LaTeX math engine in the app. Any LaTeX command written outside $...$ or $$...$$ will appear as broken raw text.
-            """
-        }
+        IMPORTANT: Your reply is rendered by a LaTeX math engine in the app. Any LaTeX command written outside $...$ or $$...$$ will appear as broken raw text.
+        """
 
         prompt += """
 

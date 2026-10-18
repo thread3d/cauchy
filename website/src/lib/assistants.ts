@@ -2,11 +2,11 @@
 // Product pages and navigation share it so connector lists stay consistent.
 export const assistants = [
   {
-    id: "onDevice",
-    name: "Apple Intelligence",
-    url: "https://www.apple.com/apple-intelligence/",
+    id: "ollama",
+    name: "Ollama",
+    url: "https://ollama.com",
     description:
-      "The system model runs entirely on your Mac. Enable Apple Intelligence in System Settings; no key or network is needed. Reference indexing uses it by default when available.",
+      "Run open models locally through Ollama. Start the server, pull a chat model, and Cauchy discovers it automatically; no key and no cloud are needed. Ask and reference indexing use the local model by default.",
   },
   {
     id: "claudeCode",

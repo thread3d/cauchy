@@ -61,10 +61,10 @@ enum AssistantPreferences {
         "assistantModel.\(id.rawValue)"
     }
 
-    /// The order Automatic walks: a signed-in CLI beats the on-device model,
-    /// which beats an API key the user has to pay for separately.
+    /// The order Automatic walks: a signed-in CLI beats the local Ollama
+    /// server, which beats an API key the user has to pay for separately.
     static let automaticOrder: [AssistantConnectorID] = [
-        .claudeCode, .codex, .antigravity, .onDevice,
+        .claudeCode, .codex, .antigravity, .ollama,
     ] + AssistantConnectorID.byok
 
     // MARK: - Selection
@@ -76,7 +76,7 @@ enum AssistantPreferences {
             }
             // Migrate the pre-picker "always use on-device model" toggle.
             if UserDefaults.standard.bool(forKey: legacyForceOnDeviceKey) {
-                return .connector(.onDevice)
+                return .connector(.ollama)
             }
             return .automatic
         }
@@ -99,7 +99,7 @@ enum AssistantPreferences {
     /// choice — the picker shows this so Automatic is never a mystery.
     @MainActor
     static var automaticTarget: ResolvedAssistant {
-        let id = automaticOrder.first { $0.connector.isReady } ?? .onDevice
+        let id = automaticOrder.first { $0.connector.isReady } ?? .ollama
         return ResolvedAssistant(
             connector: id.connector,
             choice: modelChoice(for: id),
@@ -128,12 +128,12 @@ enum AssistantPreferences {
     /// the user picked for chat wins if it is a BYOK one and has a key;
     /// otherwise the first provider that has a key at all.
     ///
-    /// nil when the user explicitly pinned the assistant to the on-device
+    /// nil when the user explicitly pinned the assistant to the local Ollama
     /// model: that one choice is what keeps everything local. Choosing a CLI
     /// connector for chat does NOT disable cloud assist here — indexing still
-    /// falls back to a saved key when Apple Intelligence is unavailable.
+    /// falls back to a saved key when Ollama is unavailable.
     static var activeCloudProvider: CloudAPIProvider? {
-        guard selection != .connector(.onDevice) else { return nil }
+        guard selection != .connector(.ollama) else { return nil }
         if case .connector(let id) = selection,
            let provider = id.connector.apiProvider,
            KeychainService.hasKey(for: provider) {
@@ -164,5 +164,22 @@ enum AssistantPreferences {
     static func activeEconomyCloudModel() -> CloudLanguageModel? {
         guard let provider = activeCloudProvider else { return nil }
         return activeCloudModel(named: provider.economyModelID)
+    }
+
+    // MARK: - Local Ollama model
+
+    /// A ready-to-use local model. The explicit `modelID` wins, then the
+    /// stored choice, then whatever Ollama lists first.
+    @MainActor
+    static func localModel(named modelID: String? = nil) -> OllamaLanguageModel? {
+        guard OllamaService.shared.availability.isAvailable else { return nil }
+        let selected: String? = switch modelChoice(for: .ollama) {
+        case .model(let id): id
+        case .connectorDefault: nil
+        }
+        guard let resolved = modelID ?? selected ?? OllamaCatalog.defaultModelID,
+              !resolved.isEmpty
+        else { return nil }
+        return OllamaLanguageModel(modelName: resolved)
     }
 }

@@ -77,7 +77,7 @@ export default function FAQPage() {
 
         <Q q="How do reference previews and scanned pages work?">
           <p>
-            Apple Intelligence builds the index by default. If unavailable, a saved
+            Ollama builds the index by default. If unavailable, a saved
             Gemini, Anthropic or OpenAI key can supply the fallback. You can also
             rebuild with any available assistant model in the Reference panel or
             Reading → Rebuild Reference Index. The panel keeps the builder&apos;s
@@ -143,7 +143,7 @@ export default function FAQPage() {
 
         <Q q="What does it cost?">
           <p>
-            The app is free. Apple Intelligence costs nothing to run. The CLI connectors
+            The app is free. Ollama costs nothing to run beyond the model download. The CLI connectors
             bill against the Anthropic, OpenAI or Google plan you already have, and the
             Anthropic, OpenAI and Gemini APIs bill your own keys separately. Cauchy has no server, no account and no
             subscription of its own.
@@ -168,7 +168,7 @@ export default function FAQPage() {
             history and retrieved PDF passages to the cloud connector you choose.
             Reference indexing is a separate operation: using a cloud API can send
             page text and rendered page images, while CLI indexing sends page text.
-            Apple Intelligence runs on-device. Provider requests are subject to their
+            Ollama runs on-device. Provider requests are subject to their
             own terms.
           </p>
           <p>
@@ -183,10 +183,10 @@ export default function FAQPage() {
         <Q q="Does it work offline?">
           <p>
             Reading, highlighting, local OCR, search and exports work offline.
-            Answers and reference indexing can run locally when Apple Intelligence
-            is enabled and available. Choose it explicitly for on-device answers:
-            Automatic prefers a ready CLI before the local model. All CLI and API
-            connectors need a network.
+            Answers and reference indexing can run locally when Ollama is running with
+            a model installed. Choose it explicitly for local answers: Automatic
+            prefers a ready CLI before the local model. All CLI and API connectors need
+            a network.
           </p>
         </Q>
 
@@ -222,9 +222,9 @@ export default function FAQPage() {
 
         <Q q="Which macOS versions are supported?">
           <p>
-            macOS 27.0 (Golden Gate) and later. Earlier versions are not supported: the app
-            is built against the macOS 27 SDK and uses frameworks that do not exist before
-            it.
+            macOS 26.0 (Tahoe) and later. Earlier versions are not supported: the app
+            is built against the macOS 26 SDK and uses Liquid Glass APIs that do not
+            exist before it.
           </p>
         </Q>
 
@@ -238,7 +238,7 @@ export default function FAQPage() {
             <a href={REPO_URL} target="_blank" rel="noopener noreferrer" className={inline}>
               github.com/jerrydjin/cauchy
             </a>
-            . Building needs Xcode 27 beta or later with the macOS 27 SDK; the{" "}
+            . Building needs Xcode 26 or later with the macOS 26 SDK; the{" "}
             <a href={`${REPO_URL}#open-in-xcode`} target="_blank" rel="noopener noreferrer" className={inline}>
               README
             </a>{" "}

@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   build-and-test:
-    runs-on: xcode-27
+    runs-on: macos-26
 
     steps:
       - name: Checkout Repository
@@ -57,10 +57,9 @@ jobs:
             CODE_SIGNING_REQUIRED=NO
 
       # The tests are app-hosted, so running them means launching an app whose
-      # deployment target is macOS 27. The xcode-27 image ships Xcode 27 on
-      # macOS 26, which can build against the 27 SDK but cannot run it — so the
-      # run is gated on the runner's own OS rather than skipped outright, and
-      # starts happening by itself once the image moves to macOS 27.
+      # deployment target is macOS 26. The gate keeps the suite from failing if
+      # this job is ever pointed at an older runner: it still compiles there,
+      # and the tests start running by themselves once the image reaches 26.
       - name: Run tests
         run: |
           set -o pipefail

@@ -129,12 +129,10 @@ struct HighlightThreadDetailView: View {
     private var unavailabilityMessage: String? {
         guard !workspace.readingAssistantAvailability.isAvailable else { return nil }
         switch workspace.readingAssistantAvailability {
-        case .deviceNotEligible:
-            return "Apple Intelligence is not supported on this Mac."
-        case .intelligenceNotEnabled:
-            return "Enable Apple Intelligence in System Settings to ask questions."
-        case .modelNotReady:
-            return "The on-device model is downloading. Try again soon."
+        case .ollamaNotRunning:
+            return "Start Ollama on this Mac to ask questions with your local model."
+        case .ollamaNoModels:
+            return "Install a model in Ollama (for example `ollama pull llama3.2`) to ask questions."
         case .apiKeyMissing(let provider):
             return "Add your \(provider.vendor) API key in Settings to ask questions."
         case .cliNotInstalled(let provider):

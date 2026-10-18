@@ -49,7 +49,7 @@ export default function Home() {
           </div>
 
           <p className="text-[14px] text-secondary mb-20">
-            Free and MIT licensed. Requires macOS 27 (Golden Gate) or later; ad-hoc
+            Free and MIT licensed. Requires macOS 26 (Tahoe) or later; ad-hoc
             signed builds need Open Anyway ·{" "}
             <Link href="/setup" className={inline}>
               installation notes
@@ -148,7 +148,7 @@ export default function Home() {
                 When an author cites &ldquo;Theorem 2.1&rdquo; forty pages later, hover it.
                 Previews lead with the original PDF text and page for numbered statements,
                 equations and figure captions, with AI formatting labelled separately.
-                Later printed mentions stay collapsed. Indexing prefers Apple Intelligence;
+                Later printed mentions stay collapsed. Indexing prefers the local Ollama model;
                 rebuild with any available assistant model from the Reference panel.
               </p>
 
@@ -327,7 +327,7 @@ export default function Home() {
               <p className="text-[16px] text-secondary leading-relaxed">
                 Ask sends selected text, context and retrieved passages to your chosen
                 cloud provider. Cloud reference indexing can also send page text and
-                rendered page images. Choose Apple Intelligence for on-device processing.{" "}
+                rendered page images. Choose Ollama for local processing.{" "}
                 <Link href="/legal/privacy" className={inline}>Read the privacy policy</Link>.
               </p>
             </div>

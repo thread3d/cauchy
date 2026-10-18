@@ -231,8 +231,9 @@ final class SelectionThreadViewModel {
             pageIndex: thread.pageIndex,
             referenceIndex: referenceIndex,
             documentIndex: documentIndex,
-            // The on-device window is small; cloud/CLI providers can take more.
-            passageLimit: provider == .onDevice ? 3 : 5
+            // A local Ollama model may run with a small window; cloud/CLI
+            // providers can take more.
+            passageLimit: provider == .ollama ? 3 : 5
         )
     }
 

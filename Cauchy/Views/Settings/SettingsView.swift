@@ -70,7 +70,7 @@ struct SettingsView: View {
             } header: {
                 Text("Connect your assistant")
             } footer: {
-                Text("Choose a provider to install it and sign in here. Cauchy uses your existing plan; your provider handles authentication.")
+                Text("Ollama runs models on this Mac: start it with `ollama serve` and pull a model with `ollama pull`. The CLI providers below use your existing subscription; Cauchy never sees the credential.")
             }
 
             Section {
@@ -80,7 +80,7 @@ struct SettingsView: View {
             } header: {
                 Text("Your API keys")
             } footer: {
-                Text("Bring your own key to reach a vendor's API directly. Keys are stored in your Keychain, sent only to the vendor they belong to, and billed to you per request. A saved key is also the fallback for reference indexing when Apple Intelligence is unavailable.")
+                Text("Bring your own key to reach a vendor's API directly. Keys are stored in your Keychain, sent only to the vendor they belong to, and billed to you per request. A saved key is also the fallback for reference indexing when Ollama is unavailable.")
             }
         }
         .formStyle(.grouped)
@@ -93,7 +93,11 @@ struct SettingsView: View {
                 onSettingsChanged?()
             }
         }
-        .onAppear { CLIAgentRunner.invalidateBinaryCache(); refreshID = UUID() }
+        .onAppear {
+            CLIAgentRunner.invalidateBinaryCache()
+            OllamaService.shared.refreshIfNeeded(maxAge: 0)
+            refreshID = UUID()
+        }
     }
 
     // MARK: - Connector status
@@ -126,6 +130,18 @@ struct SettingsView: View {
                 }
                 .controlSize(.small)
                 .disabled(setup.busy)
+            } else if connector.id == .ollama {
+                HStack(spacing: 8) {
+                    Text(status.badge).font(.caption).foregroundStyle(.secondary)
+                    Button("Refresh") {
+                        Task {
+                            await OllamaService.shared.refresh()
+                            refreshID = UUID()
+                            onSettingsChanged?()
+                        }
+                    }
+                    .controlSize(.small)
+                }
             } else {
                 Text(status.badge).font(.caption).foregroundStyle(.secondary)
             }

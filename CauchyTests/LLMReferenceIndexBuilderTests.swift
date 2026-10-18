@@ -936,7 +936,7 @@ final class AskContextRetrieverEvidenceTests: XCTestCase {
             passageRecords: [DocumentPassage(text: passage, location: location)]
         )
 
-        let clipped = retrieval.clippedForPrompt(provider: .onDevice)
+        let clipped = retrieval.clippedForPrompt(provider: .ollama)
 
         XCTAssertEqual(clipped.passages.count, 1)
         XCTAssertLessThan(clipped.passages[0].count, passage.count)
@@ -951,7 +951,7 @@ final class AskContextRetrieverEvidenceTests: XCTestCase {
             statementRoutes: [],
             passages: [complete.text],
             passageRecords: [complete]
-        ).clippedForPrompt(provider: .onDevice)
+        ).clippedForPrompt(provider: .ollama)
         XCTAssertEqual(completeRetrieval.passageRecords.first?.location, location)
     }
 

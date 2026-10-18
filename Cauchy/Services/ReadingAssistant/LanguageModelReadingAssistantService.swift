@@ -1,33 +1,19 @@
 import Foundation
 import FoundationModels
 
+/// The reading assistant backed by a local Ollama model or a BYOK provider.
+/// Both are stateless per request, so `ReadingLanguageModelSession` replays the
+/// transcript as a single prompt.
 @MainActor
-final class FoundationModelsReadingAssistantService: ReadingAssistantProtocol {
+final class LanguageModelReadingAssistantService: ReadingAssistantProtocol {
     let provider: AssistantConnectorID
 
     private let model: any LanguageModel
-    private var session: LanguageModelSession?
+    private var session: ReadingLanguageModelSession?
 
     init(model: any LanguageModel, provider: AssistantConnectorID) {
         self.model = model
         self.provider = provider
-    }
-
-    static var localAvailability: ReadingAssistantAvailability {
-        switch SystemLanguageModel.default.availability {
-        case .available:
-            return .available(.onDevice)
-        case .unavailable(.deviceNotEligible):
-            return .deviceNotEligible
-        case .unavailable(.appleIntelligenceNotEnabled):
-            return .intelligenceNotEnabled
-        case .unavailable(.modelNotReady):
-            return .modelNotReady
-        case .unavailable:
-            return .unavailable
-        @unknown default:
-            return .unavailable
-        }
     }
 
     static func availability(for apiProvider: CloudAPIProvider) -> ReadingAssistantAvailability {
@@ -38,7 +24,7 @@ final class FoundationModelsReadingAssistantService: ReadingAssistantProtocol {
 
     var availability: ReadingAssistantAvailability {
         guard let apiProvider = provider.connector.apiProvider else {
-            return Self.localAvailability
+            return OllamaService.shared.availability
         }
         return Self.availability(for: apiProvider)
     }
@@ -47,8 +33,7 @@ final class FoundationModelsReadingAssistantService: ReadingAssistantProtocol {
         if let apiProvider = provider.connector.apiProvider {
             return KeychainService.hasKey(for: apiProvider)
         }
-        guard let systemModel = model as? SystemLanguageModel else { return false }
-        return systemModel.isAvailable
+        return OllamaService.shared.availability.isAvailable
     }
 
     var isResponding: Bool {
@@ -56,7 +41,7 @@ final class FoundationModelsReadingAssistantService: ReadingAssistantProtocol {
     }
 
     func resetSession(context: ReadingContext) {
-        session = LanguageModelSession(
+        session = ReadingLanguageModelSession(
             model: model,
             instructions: ReadingPromptBuilder.instructions(for: context, provider: provider)
         )
@@ -88,7 +73,7 @@ final class FoundationModelsReadingAssistantService: ReadingAssistantProtocol {
             }
         }
 
-        session = LanguageModelSession(model: model, transcript: Transcript(entries: entries))
+        session = ReadingLanguageModelSession(model: model, transcript: Transcript(entries: entries))
     }
 
     func ask(
@@ -142,6 +127,11 @@ final class FoundationModelsReadingAssistantService: ReadingAssistantProtocol {
             return final
         } catch let error as CloudAPIError {
             throw Self.mapCloudError(error)
+        } catch let error as OllamaError {
+            if case .notRunning = error {
+                throw ReadingAssistantError.notAvailable(.ollamaNotRunning)
+            }
+            throw ReadingAssistantError.network(error.localizedDescription)
         } catch let error as LanguageModelError {
             throw ReadingAssistantError.languageModel(error)
         }
@@ -153,7 +143,7 @@ final class FoundationModelsReadingAssistantService: ReadingAssistantProtocol {
     ) async throws -> String {
         guard !AssistantResponseValidator.isDisplayReady(text) else { return text }
 
-        let repairSession = LanguageModelSession(
+        let repairSession = ReadingLanguageModelSession(
             model: model,
             instructions: ReadingPromptBuilder.latexRepairInstructions()
         )

@@ -363,7 +363,7 @@ struct DocumentReferenceIndexSnapshot: Sendable {
 
 /// How the loaded reference index was produced. Surfaced in the Reference
 /// panel so a thin or wrong index points at the model that built it — the
-/// small on-device model is the usual culprit, and the fix is a cloud re-index.
+/// small local model is the usual culprit, and the fix is a cloud re-index.
 struct ReferenceIndexProvenance: Equatable, Sendable {
     /// Matches `PersistedReferenceIndex.builtWith`: "on-device",
     /// "legacy-unknown", or a `CloudAPIProvider` raw value.

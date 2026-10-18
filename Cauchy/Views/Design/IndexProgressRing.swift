@@ -44,6 +44,8 @@ struct ReferenceIndexMenuItems: View {
     @Bindable var workspace: WorkspaceViewModel
 
     var body: some View {
+        let _ = OllamaService.shared.revision
+
         Button("Rebuild automatically") {
             workspace.rebuildReferenceIndex()
         }
@@ -72,5 +74,6 @@ struct ReferenceIndexMenuItems: View {
                 .disabled(!connector.isReady)
             }
         }
+        .task { OllamaService.shared.refreshIfNeeded() }
     }
 }

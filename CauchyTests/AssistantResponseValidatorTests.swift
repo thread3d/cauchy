@@ -156,7 +156,7 @@ final class AssistantResponseValidatorTests: XCTestCase {
         XCTAssertEqual(answer.answerEvidence?.declaredBasis, .pdf)
         XCTAssertEqual(answer.answerEvidence?.citationStatus, .noResolvableCitation)
         XCTAssertEqual(answer.answerEvidence?.sourcePages, [5])
-        XCTAssertEqual(answer.answerEvidence?.providerID, AssistantConnectorID.onDevice.rawValue)
+        XCTAssertEqual(answer.answerEvidence?.providerID, AssistantConnectorID.ollama.rawValue)
     }
 
     @MainActor
@@ -335,8 +335,8 @@ final class AssistantResponseValidatorTests: XCTestCase {
 
 @MainActor
 private final class EvidenceBoundaryAssistantStub: ReadingAssistantProtocol {
-    let provider = AssistantConnectorID.onDevice
-    let availability = ReadingAssistantAvailability.available(.onDevice)
+    let provider = AssistantConnectorID.ollama
+    let availability = ReadingAssistantAvailability.available(.ollama)
     var isResponding = false
     var lastRetrieval: AskRetrieval?
     let response: String

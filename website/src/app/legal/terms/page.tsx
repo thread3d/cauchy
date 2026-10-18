@@ -50,14 +50,14 @@ export default function TermsPage() {
           3. Third-Party Models and Costs
         </h2>
         <p>
-          Cauchy answers questions through a provider you choose: the on-device Apple
-          Intelligence model, the Claude Code, Codex or Antigravity CLIs you have signed
-          into, or the Anthropic, OpenAI or Gemini API with your own key. You are solely responsible for any
+          Cauchy answers questions through a provider you choose: a local model served
+          by Ollama, the Claude Code, Codex or Antigravity CLIs you have signed into,
+          or the Anthropic, OpenAI or Gemini API with your own key. You are solely responsible for any
           costs, rate limits, quota exhaustion or account restrictions those services
           impose.
         </p>
         <p>
-          Cauchy is not affiliated with Apple, Anthropic, OpenAI or Google. Your use of
+          Cauchy is not affiliated with Ollama, Apple, Anthropic, OpenAI or Google. Your use of
           their services is governed by your agreements with them, and the accuracy of any
           answer is theirs, not ours &mdash; verify mathematics before you rely on it.
         </p>

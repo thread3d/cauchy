@@ -1,12 +1,11 @@
 import Foundation
-import FoundationModels
 
 /// A BYOK provider dressed as a `LanguageModel`, so everything built on
-/// `LanguageModelSession` — chat, reference indexing, thread titles — works the
-/// same whether the answer comes from this Mac or from a vendor's API.
+/// `ReadingLanguageModelSession` — chat, reference indexing, thread titles —
+/// works the same whether the answer comes from this Mac or from a vendor's
+/// API. (The macOS 26 SDK's `LanguageModelSession` cannot host a custom model,
+/// hence the app-level protocol in `LanguageModelCompatibility.swift`.)
 struct CloudLanguageModel: LanguageModel {
-    typealias Executor = CloudLanguageModelExecutor
-
     let provider: CloudAPIProvider
     let apiKey: String
     let modelName: String
@@ -17,53 +16,16 @@ struct CloudLanguageModel: LanguageModel {
         self.modelName = modelName ?? provider.defaultModelID
     }
 
-    var capabilities: LanguageModelCapabilities {
-        LanguageModelCapabilities([])
-    }
-
-    var executorConfiguration: CloudLanguageModelExecutor.Configuration {
-        CloudLanguageModelExecutor.Configuration(
+    func streamResponse(
+        to prompt: CloudPrompt,
+        onDelta: @Sendable (String) async -> Void
+    ) async throws {
+        try await CloudStreamingClient.stream(
             provider: provider,
             apiKey: apiKey,
-            modelName: modelName
+            modelName: modelName,
+            prompt: prompt,
+            onDelta: onDelta
         )
-    }
-}
-
-struct CloudLanguageModelExecutor: LanguageModelExecutor {
-    typealias Model = CloudLanguageModel
-
-    struct Configuration: Hashable, Sendable {
-        let provider: CloudAPIProvider
-        let apiKey: String
-        let modelName: String
-    }
-
-    let configuration: Configuration
-
-    init(configuration: Configuration) throws {
-        self.configuration = configuration
-    }
-
-    func prewarm(model: CloudLanguageModel, transcript: Transcript) {}
-
-    func respond(
-        to request: LanguageModelExecutorGenerationRequest,
-        model: CloudLanguageModel,
-        streamingInto channel: LanguageModelExecutorGenerationChannel
-    ) async throws {
-        let entryID = UUID().uuidString
-
-        try await CloudStreamingClient.stream(
-            provider: configuration.provider,
-            apiKey: configuration.apiKey,
-            modelName: configuration.modelName,
-            prompt: CloudPrompt(transcript: request.transcript)
-        ) { delta in
-            await channel.send(.response(
-                entryID: entryID,
-                action: .appendText(delta, segmentID: nil, tokenCount: 0)
-            ))
-        }
     }
 }

@@ -46,7 +46,7 @@ struct AssistantModel: Identifiable, Hashable, Sendable {
 
 /// What the user must have done for a connector to work.
 enum ConnectorAccess: Equatable, Sendable {
-    /// Runs on this Mac. Nothing to set up beyond Apple Intelligence itself.
+    /// Runs on this Mac through the local Ollama server. No key, no cloud.
     case onDevice
     /// A CLI the user signs into once in Terminal, billed to their own plan.
     /// The app spawns the binary and never sees a credential.
@@ -58,9 +58,9 @@ enum ConnectorAccess: Equatable, Sendable {
 
 /// Which model an ask should use within a connector.
 enum ModelChoice: Hashable, Sendable {
-    /// The connector has nothing to choose between — Apple Intelligence runs
-    /// the one system model, and agy takes no model flag at all. Nothing is
-    /// passed on the command line.
+    /// The connector has nothing to choose between — agy takes no model flag
+    /// at all — or no local model has been discovered yet. Nothing is passed
+    /// on the command line.
     case connectorDefault
     case model(String)
 
@@ -76,7 +76,9 @@ enum ModelChoice: Hashable, Sendable {
 }
 
 enum AssistantConnectorID: String, CaseIterable, Identifiable, Hashable, Sendable {
-    case onDevice
+    /// The local Ollama connector. The raw value stays `onDevice` so a
+    /// selection stored before the switch from Apple Intelligence still reads.
+    case ollama = "onDevice"
     case claudeCode
     case codex
     case antigravity
@@ -103,15 +105,43 @@ struct AssistantConnector: Identifiable, Sendable {
     let symbol: String
     let tagline: String
     let access: ConnectorAccess
-    /// Models the app can name explicitly. Empty when this connector has no
-    /// model to choose — it is then a leaf in the picker.
-    let models: [AssistantModel]
+    /// The connector's fixed catalog. Ollama is the exception: its models are
+    /// whatever the local server reports, read live from `OllamaCatalog`.
+    private let builtInModels: [AssistantModel]
     /// What the picker's model pane says when there is nothing to choose.
     let noModelsNote: String?
     /// Set apart in the picker: this one needs an API key and a billing account
     /// of its own, unlike the connectors that ride a subscription the user
     /// already pays for.
     let isAdvanced: Bool
+
+    /// Models the app can name explicitly. Empty when this connector has no
+    /// model to choose — it is then a leaf in the picker.
+    var models: [AssistantModel] {
+        id == .ollama ? OllamaCatalog.models : builtInModels
+    }
+
+    init(
+        id: AssistantConnectorID,
+        name: String,
+        vendor: String,
+        symbol: String,
+        tagline: String,
+        access: ConnectorAccess,
+        models: [AssistantModel],
+        noModelsNote: String?,
+        isAdvanced: Bool
+    ) {
+        self.id = id
+        self.name = name
+        self.vendor = vendor
+        self.symbol = symbol
+        self.tagline = tagline
+        self.access = access
+        self.builtInModels = models
+        self.noModelsNote = noModelsNote
+        self.isAdvanced = isAdvanced
+    }
 }
 
 extension AssistantConnectorID {
@@ -180,7 +210,7 @@ extension AssistantConnector {
     var setupHint: String {
         switch access {
         case .onDevice:
-            "Turn on Apple Intelligence in System Settings."
+            "Start Ollama (`ollama serve`), then install a model."
         case .cliSignIn:
             "Open Settings to install and connect \(name)."
         case .apiKey(let provider):
@@ -208,16 +238,16 @@ extension AssistantConnector {
 
     static func `for`(_ id: AssistantConnectorID) -> AssistantConnector {
         switch id {
-        case .onDevice:
+        case .ollama:
             AssistantConnector(
-                id: .onDevice,
-                name: "Apple Intelligence",
-                vendor: "Apple",
-                symbol: "apple.logo",
-                tagline: "Runs entirely on this Mac. No key, no network.",
+                id: .ollama,
+                name: "Ollama",
+                vendor: "Ollama",
+                symbol: "server.rack",
+                tagline: "Runs local models through Ollama. No key, no cloud.",
                 access: .onDevice,
                 models: [],
-                noModelsNote: "One system model",
+                noModelsNote: "Start Ollama to list local models",
                 isAdvanced: false
             )
 

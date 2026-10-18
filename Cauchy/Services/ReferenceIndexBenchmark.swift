@@ -1,5 +1,5 @@
+import AppKit
 import Foundation
-import FoundationModels
 import PDFKit
 
 /// Headless benchmark of on-device reference indexing, invoked with
@@ -210,15 +210,22 @@ enum ReferenceIndexBenchmark {
     /// Deliberately nonisolated: the PDFDocument is created and consumed
     /// entirely off the main actor, matching LLMReferenceIndexBuilder.build.
     nonisolated static func run(config: Config) async -> Int32 {
-        print("Cauchy reference-indexing benchmark (\(config.sourceOnly ? "source-only" : "on-device model"))")
+        print("Cauchy reference-indexing benchmark (\(config.sourceOnly ? "source-only" : "Ollama model"))")
         print("PDF: \(config.pdfURL.path)")
 
         if !config.sourceOnly {
-            switch SystemLanguageModel.default.availability {
+            await OllamaService.shared.refresh()
+            switch OllamaCatalog.availability {
             case .available:
                 break
-            case .unavailable(let reason):
-                print("ERROR: Apple Intelligence model unavailable: \(String(describing: reason))")
+            case .ollamaNotRunning:
+                print("ERROR: Ollama is not running. Start it with `ollama serve`.")
+                return 1
+            case .ollamaNoModels:
+                print("ERROR: Ollama has no chat model installed. Pull one with `ollama pull`.")
+                return 1
+            default:
+                print("ERROR: Ollama is unavailable.")
                 return 1
             }
         }
@@ -279,7 +286,14 @@ enum ReferenceIndexBenchmark {
         )
 
         var reports: [PageReport] = []
-        let model = SystemLanguageModel.default
+        var model: any LanguageModel = OllamaLanguageModel(modelName: "")
+        if !config.sourceOnly {
+            guard let modelID = OllamaCatalog.defaultModelID else {
+                print("ERROR: no local Ollama model is selected.")
+                return 1
+            }
+            model = OllamaLanguageModel(modelName: modelID)
+        }
 
         for pageIndex in sampled {
             let started = Date()
@@ -647,31 +661,46 @@ enum ReferenceIndexBenchmark {
         let url = URL(fileURLWithPath: (pdfPath as NSString).expandingTildeInPath)
         guard let document = PDFDocument(url: url),
               pageNumber > 0, pageNumber <= document.pageCount,
-              let page = document.page(at: pageNumber - 1),
-              let image = PDFRegionRenderer.renderFullPage(page) else {
+              document.page(at: pageNumber - 1) != nil else {
+            print("ERROR: could not read page \(pageNumber) from \(url.path)")
+            return 1
+        }
+        await OllamaService.shared.refresh()
+        guard case .available = OllamaCatalog.availability else {
+            print("ERROR: Ollama is not running or has no model installed")
+            return 2
+        }
+        guard let modelID = OllamaCatalog.visionModelID else {
+            print("ERROR: no installed Ollama model reports vision support")
+            return 2
+        }
+        guard let page = document.page(at: pageNumber - 1),
+              let image = PDFRegionRenderer.renderFullPage(page),
+              let png = pngData(from: image) else {
             print("ERROR: could not render page \(pageNumber) from \(url.path)")
             return 1
         }
-        guard case .available = SystemLanguageModel.default.availability else {
-            print("ERROR: on-device language model unavailable")
-            return 2
-        }
+
         do {
-            let session = LanguageModelSession(
-                model: SystemLanguageModel.default,
-                instructions: "Read the supplied page image. Do not invent text that is not visible."
+            let answer = try await OllamaClient.text(
+                model: modelID,
+                prompt: CloudPrompt(
+                    instructions: "Read the supplied page image. Do not invent text that is not visible.",
+                    prompt: "List only numbered definitions, theorems, lemmas, propositions, corollaries, examples, remarks, and displayed equations that are introduced on this page. Exclude citations. One KIND NUMBER per line. If uncertain, say uncertain.",
+                    imagePNG: png
+                )
             )
-            let response = try await session.respond {
-                "List only numbered definitions, theorems, lemmas, propositions, corollaries, examples, remarks, and displayed equations that are introduced on this page. Exclude citations. One KIND NUMBER per line. If uncertain, say uncertain."
-                Attachment(image)
-            }
-            print("Vision page \(pageNumber):")
-            print(response.content)
+            print("Vision page \(pageNumber) (\(modelID)):")
+            print(answer)
             return 0
         } catch {
-            print("ERROR: on-device image understanding failed: \(error)")
+            print("ERROR: Ollama image understanding failed: \(error.localizedDescription)")
             return 3
         }
+    }
+
+    private static func pngData(from image: CGImage) -> Data? {
+        NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:])
     }
 
     // MARK: - Helpers
@@ -909,7 +938,7 @@ enum ReferenceIndexBenchmark {
 
         return Summary(
             pdfPath: config.pdfURL.path,
-            indexingMode: config.sourceOnly ? "source-only" : "on-device model",
+            indexingMode: config.sourceOnly ? "source-only" : "Ollama model",
             pageCount: pageCount,
             sampledPages: reports.count,
             succeededPages: succeeded.count,

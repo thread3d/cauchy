@@ -38,9 +38,11 @@ export default function SetupPage() {
       <div className="max-w-none text-[16px] leading-relaxed text-secondary">
         <h2 className="text-2xl mt-12 mb-4 text-primary font-medium">Requirements</h2>
         <ul className="list-disc pl-6 space-y-2">
-          <li>macOS 27.0 (Golden Gate) or later.</li>
+          <li>macOS 26.0 (Tahoe) or later.</li>
           <li>
-            An Apple Silicon Mac if you want the on-device Apple Intelligence connector.
+            Ollama for local answers and reference indexing: start the server and pull a
+            chat model. A Claude Code, Codex or Antigravity CLI, or an API key, can be
+            used instead.
           </li>
           <li>
             Nothing else. There is no account to create and no license key.
@@ -83,7 +85,7 @@ export default function SetupPage() {
 
         <h2 className="text-2xl mt-12 mb-4 text-primary font-medium">Build from source</h2>
         <p>
-          Building needs Xcode 27 beta or later with the macOS 27 SDK &mdash; Command Line
+          Building needs Xcode 26 or later with the macOS 26 SDK &mdash; Command Line
           Tools alone cannot build the app. The full instructions, including the SwiftMath
           checkout and the project generator, are in the{" "}
           <a href={`${REPO_URL}#open-in-xcode`} target="_blank" rel="noopener noreferrer" className={inline}>
@@ -99,8 +101,8 @@ export default function SetupPage() {
         <p>
           Choose an assistant beside the ask field or in Settings → Assistant → Ask
           uses. Automatic picks a ready Claude Code, Codex or Antigravity CLI first,
-          then Apple Intelligence, then an available API key. Choose Apple Intelligence
-          explicitly when you want answers to stay on-device.
+          then Ollama, then an available API key. Choose Ollama explicitly when you want
+          answers to stay local.
         </p>
         <p className="mt-4">
           For CLI connectors, open Settings → Connect your assistant and choose
@@ -122,7 +124,7 @@ export default function SetupPage() {
             <p>{assistant.description}</p>
             <p className="mt-2">
               <a href={assistant.url} target="_blank" rel="noopener noreferrer" className={inline}>
-                {assistant.id === "onDevice" ? "Apple Intelligence requirements" :
+                {assistant.id === "ollama" ? "Ollama setup" :
                   ["anthropicAPI", "openaiAPI", "gemini"].includes(assistant.id) ? "Get an API key" : "Official CLI documentation"}
               </a>
             </p>
@@ -131,7 +133,7 @@ export default function SetupPage() {
 
         <h2 className="text-2xl mt-12 mb-4 text-primary font-medium">Reference indexing</h2>
         <p>
-          Indexing prefers Apple Intelligence independently of the assistant selected
+          Indexing prefers the local Ollama model independently of the assistant selected
           for Ask. If the local model is unavailable, it can use a saved Gemini,
           Anthropic or OpenAI API key. In the Reference panel or Reading → Rebuild
           Reference Index, choose any available assistant model to rebuild. The panel
